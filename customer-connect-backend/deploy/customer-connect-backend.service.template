@@ -1,0 +1,26 @@
+[Unit]
+Description=Customer Connect backend (FastAPI)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=__APP_USER__
+WorkingDirectory=__APP_DIR__
+# EnvironmentFile makes .env visible to systemd itself (not just to
+# pydantic-settings' own .env loading), so values are available even if
+# something ever runs this unit with a different working directory.
+EnvironmentFile=__APP_DIR__/.env
+ExecStart=__VENV_DIR__/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=on-failure
+RestartSec=3
+
+# Basic hardening — remove/relax any of these if they conflict with
+# something your setup needs (e.g. writing files outside APP_DIR).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=__APP_DIR__
+
+[Install]
+WantedBy=multi-user.target
